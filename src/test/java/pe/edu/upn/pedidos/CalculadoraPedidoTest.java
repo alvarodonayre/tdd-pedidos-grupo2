@@ -101,4 +101,53 @@ void debeCalcularImpuesto(
     assertEquals(new BigDecimal(esperado), resultado);
 }
 
+
+@Test
+void debeCalcularTotalConDescuentoEIGV() {
+    Producto producto = new Producto(
+            "Producto",
+            new BigDecimal("100.00"),
+            1
+    );
+
+    CalculadoraPedido calculadora = new CalculadoraPedido();
+
+    BigDecimal resultado = calculadora.calcularTotal(
+            List.of(producto),
+            new BigDecimal("10.00")
+    );
+
+    assertEquals(new BigDecimal("106.20"), resultado);
+}
+
+@Test
+void debeRedondearCorrectamenteElTotal() {
+    Producto producto1 = new Producto(
+            "Producto 1",
+            new BigDecimal("11.11"),
+            1
+    );
+
+    Producto producto2 = new Producto(
+            "Producto 2",
+            new BigDecimal("11.11"),
+            1
+    );
+
+    Producto producto3 = new Producto(
+            "Producto 3",
+            new BigDecimal("11.11"),
+            1
+    );
+
+    CalculadoraPedido calculadora = new CalculadoraPedido();
+
+    BigDecimal resultado = calculadora.calcularTotal(
+            List.of(producto1, producto2, producto3),
+            BigDecimal.ZERO
+    );
+
+    assertEquals(new BigDecimal("39.33"), resultado);
+}
+
 }
