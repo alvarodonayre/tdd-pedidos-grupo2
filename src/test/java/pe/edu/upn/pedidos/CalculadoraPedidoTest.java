@@ -1,8 +1,9 @@
 package pe.edu.upn.pedidos;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,186 +37,159 @@ class CalculadoraPedidoTest {
     }
 
     @Test
-void debeCalcularSubtotalConsiderandoCantidad() {
-    Producto producto = new Producto(
-            "Producto",
-            new BigDecimal("27.00"),
-            3
-    );
+    void debeCalcularSubtotalConsiderandoCantidad() {
+        Producto producto = new Producto(
+                "Producto",
+                new BigDecimal("27.00"),
+                3
+        );
 
-    CalculadoraPedido calculadora = new CalculadoraPedido();
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
-    BigDecimal resultado = calculadora.calcularSubtotal(
-            List.of(producto)
-    );
+        BigDecimal resultado = calculadora.calcularSubtotal(
+                List.of(producto)
+        );
 
-    assertEquals(new BigDecimal("81.00"), resultado);
-}
+        assertEquals(new BigDecimal("81.00"), resultado);
+    }
 
-@Test
-void debeRetornarCeroParaListaVacia() {
-    CalculadoraPedido calculadora = new CalculadoraPedido();
+    @Test
+    void debeRetornarCeroParaListaVacia() {
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
-    BigDecimal resultado = calculadora.calcularSubtotal(List.of());
+        BigDecimal resultado = calculadora.calcularSubtotal(List.of());
 
-    assertEquals(new BigDecimal("0.00"), resultado);
-}
+        assertEquals(new BigDecimal("0.00"), resultado);
+    }
 
+    @ParameterizedTest
+    @CsvSource({
+            "100.00, 10.00, 90.00",
+            "100.00, 0.00, 100.00",
+            "100.00, 100.00, 0.00"
+    })
+    void debeAplicarDescuento(
+            String subtotal,
+            String porcentaje,
+            String esperado
+    ) {
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
-@ParameterizedTest
-@CsvSource({
-        "100.00, 10.00, 90.00",
-        "100.00, 0.00, 100.00",
-        "100.00, 100.00, 0.00"
-})
-void debeAplicarDescuento(
-        String subtotal,
-        String porcentaje,
-        String esperado
-) {
-    CalculadoraPedido calculadora = new CalculadoraPedido();
+        BigDecimal resultado = calculadora.aplicarDescuento(
+                new BigDecimal(subtotal),
+                new BigDecimal(porcentaje)
+        );
 
-    BigDecimal resultado = calculadora.aplicarDescuento(
-            new BigDecimal(subtotal),
-            new BigDecimal(porcentaje)
-    );
+        assertEquals(new BigDecimal(esperado), resultado);
+    }
 
-    assertEquals(new BigDecimal(esperado), resultado);
-}
+    @ParameterizedTest
+    @CsvSource({
+            "100.00, 18.00",
+            "90.00, 16.20"
+    })
+    void debeCalcularImpuesto(
+            String baseImponible,
+            String esperado
+    ) {
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
+        BigDecimal resultado = calculadora.calcularImpuesto(
+                new BigDecimal(baseImponible)
+        );
 
-@ParameterizedTest
-@CsvSource({
-        "100.00, 18.00",
-        "90.00, 16.20"
-})
-void debeCalcularImpuesto(
-        String baseImponible,
-        String esperado
-) {
-    CalculadoraPedido calculadora = new CalculadoraPedido();
+        assertEquals(new BigDecimal(esperado), resultado);
+    }
 
-    BigDecimal resultado = calculadora.calcularImpuesto(
-            new BigDecimal(baseImponible)
-    );
+    @Test
+    void debeCalcularTotalConDescuentoEIGV() {
+        Producto producto = new Producto(
+                "Producto",
+                new BigDecimal("100.00"),
+                1
+        );
 
-    assertEquals(new BigDecimal(esperado), resultado);
-}
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
+        BigDecimal resultado = calculadora.calcularTotal(
+                List.of(producto),
+                new BigDecimal("10.00")
+        );
 
-@Test
-void debeCalcularTotalConDescuentoEIGV() {
-    Producto producto = new Producto(
-            "Producto",
-            new BigDecimal("100.00"),
-            1
-    );
+        assertEquals(new BigDecimal("106.20"), resultado);
+    }
 
-    CalculadoraPedido calculadora = new CalculadoraPedido();
+    @Test
+    void debeRedondearCorrectamenteElTotal() {
+        Producto producto1 = new Producto(
+                "Producto 1",
+                new BigDecimal("11.11"),
+                1
+        );
 
-    BigDecimal resultado = calculadora.calcularTotal(
-            List.of(producto),
-            new BigDecimal("10.00")
-    );
+        Producto producto2 = new Producto(
+                "Producto 2",
+                new BigDecimal("11.11"),
+                1
+        );
 
-    assertEquals(new BigDecimal("106.20"), resultado);
-}
+        Producto producto3 = new Producto(
+                "Producto 3",
+                new BigDecimal("11.11"),
+                1
+        );
 
-@Test
-void debeRedondearCorrectamenteElTotal() {
-    Producto producto1 = new Producto(
-            "Producto 1",
-            new BigDecimal("11.11"),
-            1
-    );
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
-    Producto producto2 = new Producto(
-            "Producto 2",
-            new BigDecimal("11.11"),
-            1
-    );
+        BigDecimal resultado = calculadora.calcularTotal(
+                List.of(producto1, producto2, producto3),
+                BigDecimal.ZERO
+        );
 
-    Producto producto3 = new Producto(
-            "Producto 3",
-            new BigDecimal("11.11"),
-            1
-    );
+        assertEquals(new BigDecimal("39.33"), resultado);
+    }
 
-    CalculadoraPedido calculadora = new CalculadoraPedido();
+    @Test
+    void debeRechazarPrecioNegativo() {
+        IllegalArgumentException excepcion = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Producto(
+                        "Producto",
+                        new BigDecimal("-5.00"),
+                        1
+                )
+        );
 
-    BigDecimal resultado = calculadora.calcularTotal(
-            List.of(producto1, producto2, producto3),
-            BigDecimal.ZERO
-    );
+        assertEquals(
+                "El precio no puede ser negativo",
+                excepcion.getMessage()
+        );
+    }
 
-    assertEquals(new BigDecimal("39.33"), resultado);
-}
+    @ParameterizedTest
+    @ValueSource(ints = {0, -2})
+    void debeRechazarCantidadNoPositiva(int cantidad) {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Producto(
+                        "Producto",
+                        new BigDecimal("10.00"),
+                        cantidad
+                )
+        );
+    }
 
-@Test
-void debeRechazarPrecioNegativo() {
-    IllegalArgumentException excepcion = assertThrows(
-            IllegalArgumentException.class,
-            () -> new Producto(
-                    "Producto",
-                    new BigDecimal("-5.00"),
-                    1
-            )
-    );
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 101})
+    void debeRechazarDescuentoFueraDeRango(int porcentaje) {
+        CalculadoraPedido calculadora = new CalculadoraPedido();
 
-    assertEquals(
-            "El precio no puede ser negativo",
-            excepcion.getMessage()
-    );
-}
-
-@Test
-void debeRechazarCantidadCero() {
-    assertThrows(
-            IllegalArgumentException.class,
-            () -> new Producto(
-                    "Producto",
-                    new BigDecimal("10.00"),
-                    0
-            )
-    );
-}
-
-@Test
-void debeRechazarCantidadNegativa() {
-    assertThrows(
-            IllegalArgumentException.class,
-            () -> new Producto(
-                    "Producto",
-                    new BigDecimal("10.00"),
-                    -2
-            )
-    );
-}
-
-@Test
-void debeRechazarDescuentoNegativo() {
-    CalculadoraPedido calculadora = new CalculadoraPedido();
-
-    assertThrows(
-            IllegalArgumentException.class,
-            () -> calculadora.aplicarDescuento(
-                    new BigDecimal("100.00"),
-                    new BigDecimal("-1.00")
-            )
-    );
-}
-
-@Test
-void debeRechazarDescuentoMayorQueCien() {
-    CalculadoraPedido calculadora = new CalculadoraPedido();
-
-    assertThrows(
-            IllegalArgumentException.class,
-            () -> calculadora.aplicarDescuento(
-                    new BigDecimal("100.00"),
-                    new BigDecimal("101.00")
-            )
-    );
-}
-
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> calculadora.aplicarDescuento(
+                        new BigDecimal("100.00"),
+                        new BigDecimal(porcentaje)
+                )
+        );
+    }
 }
