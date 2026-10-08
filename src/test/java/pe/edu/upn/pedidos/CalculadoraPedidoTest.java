@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CalculadoraPedidoTest {
 
@@ -148,6 +149,73 @@ void debeRedondearCorrectamenteElTotal() {
     );
 
     assertEquals(new BigDecimal("39.33"), resultado);
+}
+
+@Test
+void debeRechazarPrecioNegativo() {
+    IllegalArgumentException excepcion = assertThrows(
+            IllegalArgumentException.class,
+            () -> new Producto(
+                    "Producto",
+                    new BigDecimal("-5.00"),
+                    1
+            )
+    );
+
+    assertEquals(
+            "El precio no puede ser negativo",
+            excepcion.getMessage()
+    );
+}
+
+@Test
+void debeRechazarCantidadCero() {
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> new Producto(
+                    "Producto",
+                    new BigDecimal("10.00"),
+                    0
+            )
+    );
+}
+
+@Test
+void debeRechazarCantidadNegativa() {
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> new Producto(
+                    "Producto",
+                    new BigDecimal("10.00"),
+                    -2
+            )
+    );
+}
+
+@Test
+void debeRechazarDescuentoNegativo() {
+    CalculadoraPedido calculadora = new CalculadoraPedido();
+
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> calculadora.aplicarDescuento(
+                    new BigDecimal("100.00"),
+                    new BigDecimal("-1.00")
+            )
+    );
+}
+
+@Test
+void debeRechazarDescuentoMayorQueCien() {
+    CalculadoraPedido calculadora = new CalculadoraPedido();
+
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> calculadora.aplicarDescuento(
+                    new BigDecimal("100.00"),
+                    new BigDecimal("101.00")
+            )
+    );
 }
 
 }

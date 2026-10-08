@@ -24,6 +24,13 @@ public class CalculadoraPedido {
             BigDecimal subtotal,
             BigDecimal porcentaje
     ) {
+        if (porcentaje.compareTo(BigDecimal.ZERO) < 0
+                || porcentaje.compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException(
+                    "El porcentaje de descuento debe estar entre 0 y 100"
+            );
+        }
+
         BigDecimal descuento = subtotal
                 .multiply(porcentaje)
                 .divide(new BigDecimal("100"));
