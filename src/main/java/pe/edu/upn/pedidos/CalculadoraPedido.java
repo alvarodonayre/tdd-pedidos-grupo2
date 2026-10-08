@@ -18,4 +18,15 @@ public class CalculadoraPedido {
 
         return subtotal.setScale(2);
     }
+
+    public BigDecimal aplicarDescuento(
+            BigDecimal subtotal,
+            BigDecimal porcentaje
+    ) {
+        BigDecimal descuento = subtotal
+                .multiply(porcentaje)
+                .divide(new BigDecimal("100"));
+
+        return subtotal.subtract(descuento).setScale(2);
+    }
 }

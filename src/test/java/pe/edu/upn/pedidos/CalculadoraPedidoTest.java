@@ -1,5 +1,7 @@
 package pe.edu.upn.pedidos;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -56,6 +58,28 @@ void debeRetornarCeroParaListaVacia() {
     BigDecimal resultado = calculadora.calcularSubtotal(List.of());
 
     assertEquals(new BigDecimal("0.00"), resultado);
+}
+
+
+@ParameterizedTest
+@CsvSource({
+        "100.00, 10.00, 90.00",
+        "100.00, 0.00, 100.00",
+        "100.00, 100.00, 0.00"
+})
+void debeAplicarDescuento(
+        String subtotal,
+        String porcentaje,
+        String esperado
+) {
+    CalculadoraPedido calculadora = new CalculadoraPedido();
+
+    BigDecimal resultado = calculadora.aplicarDescuento(
+            new BigDecimal(subtotal),
+            new BigDecimal(porcentaje)
+    );
+
+    assertEquals(new BigDecimal(esperado), resultado);
 }
 
 }
