@@ -82,4 +82,23 @@ void debeAplicarDescuento(
     assertEquals(new BigDecimal(esperado), resultado);
 }
 
+
+@ParameterizedTest
+@CsvSource({
+        "100.00, 18.00",
+        "90.00, 16.20"
+})
+void debeCalcularImpuesto(
+        String baseImponible,
+        String esperado
+) {
+    CalculadoraPedido calculadora = new CalculadoraPedido();
+
+    BigDecimal resultado = calculadora.calcularImpuesto(
+            new BigDecimal(baseImponible)
+    );
+
+    assertEquals(new BigDecimal(esperado), resultado);
+}
+
 }

@@ -29,4 +29,13 @@ public class CalculadoraPedido {
 
         return subtotal.subtract(descuento).setScale(2);
     }
+
+
+    public BigDecimal calcularImpuesto(BigDecimal baseImponible) {
+    BigDecimal porcentajeIgv = new BigDecimal("0.18");
+
+    return baseImponible
+            .multiply(porcentajeIgv)
+            .setScale(2);
+}
 }
